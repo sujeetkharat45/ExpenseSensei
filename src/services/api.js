@@ -1,8 +1,7 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-// CHANGE THIS to your current Laptop IP address
-const API_URL = "http://192.168.1.7:5000"; 
+const API_URL = "http://192.168.1.7:5000";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -37,11 +36,9 @@ export const secureStorage = {
 // --- AUTH INTERCEPTOR ---
 api.interceptors.request.use(
   async (config) => {
-    // 🔥 Skip token check for Login and Register routes
     if (config.url.includes("/auth/login") || config.url.includes("/auth/register")) {
       return config;
     }
-
     try {
       const token = await secureStorage.getItem("authToken");
       if (token) {
@@ -56,28 +53,49 @@ api.interceptors.request.use(
 );
 
 export const authService = {
- register: async (name, email, password, gender, mobile) => {
+  register: async (name, email, password, gender, mobile) => {
     try {
       const response = await api.post("/api/auth/register", { name, email, password, gender, mobile });
-      if (response.data.token) {
-        await secureStorage.setItem("authToken", response.data.token);
-        await secureStorage.setItem("user", JSON.stringify(response.data.user));
-      }
       return { success: true, ...response.data };
     } catch (error) {
       return { success: false, error: error.response?.data?.msg || "Registration failed" };
     }
   },
-  login: async (email, password) => {
+
+  // ✅ Verify OTP after Register
+  verifyRegisterOtp: async (email, otp) => {
     try {
-      const response = await api.post("/api/auth/login", { email, password });
+      const response = await api.post("/api/auth/verify-register-otp", { email, otp });
       if (response.data.token) {
         await secureStorage.setItem("authToken", response.data.token);
         await secureStorage.setItem("user", JSON.stringify(response.data.user));
       }
       return { success: true, ...response.data };
     } catch (error) {
+      return { success: false, error: error.response?.data?.msg || "OTP verification failed" };
+    }
+  },
+
+  login: async (email, password) => {
+    try {
+      const response = await api.post("/api/auth/login", { email, password });
+      return { success: true, ...response.data };
+    } catch (error) {
       return { success: false, error: error.response?.data?.msg || "Invalid credentials" };
+    }
+  },
+
+  // ✅ Verify OTP after Login
+  verifyLoginOtp: async (email, otp) => {
+    try {
+      const response = await api.post("/api/auth/verify-otp", { email, otp });
+      if (response.data.token) {
+        await secureStorage.setItem("authToken", response.data.token);
+        await secureStorage.setItem("user", JSON.stringify(response.data.user));
+      }
+      return { success: true, ...response.data };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.msg || "OTP verification failed" };
     }
   },
 
@@ -95,7 +113,7 @@ export const authService = {
     }
   },
 
-deleteAccount: async () => {
+  deleteAccount: async () => {
     const response = await api.delete("/api/auth/delete-account");
     return response.data;
   }
@@ -119,9 +137,10 @@ export const transactionService = {
     }
   },
 };
+
 export const goalService = {
   getGoal: async () => {
-    const response = await api.get("/api/goals"); // This must match the backend route
+    const response = await api.get("/api/goals");
     return response.data;
   },
   saveGoal: async (goalData) => {
@@ -129,6 +148,5 @@ export const goalService = {
     return response.data;
   }
 };
-
 
 export default api;

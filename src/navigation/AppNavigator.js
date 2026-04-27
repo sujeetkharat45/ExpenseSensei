@@ -15,7 +15,8 @@ import ChatbotScreen from "../screens/ChatBotScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import LoginScreen from "../screens/Auth/LoginScreen";
 import RegisterScreen from "../screens/Auth/RegisterScreen";
-import GoalTrackerScreen from "../screens/GoalTrackerScreen"; 
+import OTPScreen from "../screens/Auth/OTPScreen"; // ✅ NEW
+import GoalTrackerScreen from "../screens/GoalTrackerScreen";
 import InsightsScreen from "../screens/InsightScreen";
 
 const Tab = createBottomTabNavigator();
@@ -26,6 +27,7 @@ function AuthStack() {
     <Stack.Navigator screenOptions={{ headerShown: false, animation: "fade_from_bottom" }} initialRouteName="Login">
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="OTPScreen" component={OTPScreen} />
     </Stack.Navigator>
   );
 }
@@ -40,7 +42,7 @@ function TabNavigator() {
           {focused && <View style={styles.activeDot} />}
         </View>
       )}} />
-     
+
       <Tab.Screen name="Transactions" component={TransactionsScreen} options={{ tabBarIcon: ({ focused }) => (
         <View style={styles.iconContainer}>
           <Ionicons name={focused ? "receipt" : "receipt-outline"} size={24} color={focused ? COLORS.primary : "#94A3B8"} />
@@ -90,7 +92,6 @@ export default function AppNavigator() {
           <>
             <Stack.Screen name="App" component={TabNavigator} />
             <Stack.Screen name="GoalTracker" component={GoalTrackerScreen} options={{ animation: 'slide_from_right' }} />
-            {/* 🔥 REGISTERED INSIGHTS HERE: Fixes the 'NAVIGATE' error */}
             <Stack.Screen name="Insights" component={InsightsScreen} options={{ animation: 'slide_from_bottom' }} />
           </>
         ) : (
@@ -102,58 +103,58 @@ export default function AppNavigator() {
 }
 
 const styles = StyleSheet.create({
- tabBar: { 
-    position: "absolute", 
-    bottom: 20,          
-    left: 20, 
-    right: 20, 
-    height: 70, 
-    backgroundColor: "rgba(20, 20, 20, 0.95)", 
-    borderRadius: 30, 
-    borderTopWidth: 0, 
-    elevation: 10, 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 10 }, 
-    shadowOpacity: 0.3, 
+  tabBar: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    height: 70,
+    backgroundColor: "rgba(20, 20, 20, 0.95)",
+    borderRadius: 30,
+    borderTopWidth: 0,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
     shadowRadius: 10,
-    paddingBottom: 0, 
+    paddingBottom: 0,
   },
-  iconContainer: { 
-    alignItems: "center", 
-    justifyContent: "center", 
-    top: 5 
+  iconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    top: 5
   },
-  activeDot: { 
-    width: 5, 
-    height: 5, 
-    borderRadius: 2.5, 
-    backgroundColor: COLORS.primary, 
-    marginTop: 4 
+  activeDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: COLORS.primary,
+    marginTop: 4
   },
-  fab: { 
-    width: 62, 
-    height: 62, 
-    borderRadius: 31, 
-    justifyContent: "center", 
-    alignItems: "center", 
-    top: -20, // 
-    elevation: 8, 
-    shadowColor: COLORS.primary, 
-    shadowOffset: { width: 0, height: 4 }, 
-    shadowOpacity: 0.4, 
+  fab: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    justifyContent: "center",
+    alignItems: "center",
+    top: -20,
+    elevation: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
     shadowRadius: 8,
-    borderWidth: 0, 
+    borderWidth: 0,
   },
-  loadingContainer: { 
-    flex: 1, 
-    justifyContent: "center", 
-    alignItems: "center", 
-    backgroundColor: COLORS.background 
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background
   },
-  loadingText: { 
-    color: "#fff", 
-    marginTop: 15, 
-    fontSize: 18, 
-    fontWeight: "bold" 
+  loadingText: {
+    color: "#fff",
+    marginTop: 15,
+    fontSize: 18,
+    fontWeight: "bold"
   },
 });

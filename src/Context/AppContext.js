@@ -1,9 +1,12 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
-import { transactionService, authService, goalService } from "../services/api"; // Ensure goalService is in api.js
+import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
+import { transactionService, authService, goalService } from "../services/api";
+import { AuthContext } from "./AuthContext";
 
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+  const { isLoggedIn } = useContext(AuthContext); // ✅ listen to auth state
+
   const [transactions, setTransactions] = useState([]);
   const [balance, setBalance] = useState(0);
   const [expense, setExpense] = useState(0);
@@ -13,9 +16,12 @@ export const AppProvider = ({ children }) => {
   const [activeGoal, setActiveGoal] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ Only fetch when logged in
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isLoggedIn) {
+      fetchData();
+    }
+  }, [isLoggedIn]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -27,7 +33,9 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await goalService.getGoal();
       if (res.success && res.goal) setActiveGoal(res.goal);
-    } catch (err) { console.error("Goal Error", err); }
+    } catch (err) {
+      console.error("Goal Error", err);
+    }
   };
 
   const fetchTransactions = async () => {
@@ -47,10 +55,11 @@ export const AppProvider = ({ children }) => {
         setIncome(tInc);
         setExpense(tExp);
         setBalance(tInc - tExp);
-        // Calculate savings as remainder of income after expenses
         setSavings(tInc > tExp ? tInc - tExp : 0);
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const setMonthlyGoal = async (goalData) => {
@@ -61,25 +70,27 @@ export const AppProvider = ({ children }) => {
         return true;
       }
       return false;
-    } catch (err) { return false; }
+    } catch (err) {
+      return false;
+    }
   };
 
   const getWeeklyStats = useCallback(() => {
     const last7Days = [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      return d.toISOString().split('T')[0];
+      return d.toISOString().split("T")[0];
     }).reverse();
 
     const chartData = last7Days.map(date => {
       return transactions
-        .filter(t => t.type === "expense" && t.date.split('T')[0] === date)
+        .filter(t => t.type === "expense" && t.date.split("T")[0] === date)
         .reduce((sum, t) => sum + t.amount, 0);
     });
 
     return {
-      labels: last7Days.map(d => d.split('-')[2]),
-      datasets: [{ data: chartData }]
+      labels: last7Days.map(d => d.split("-")[2]),
+      datasets: [{ data: chartData }],
     };
   }, [transactions]);
 
@@ -89,18 +100,20 @@ export const AppProvider = ({ children }) => {
       const res = await transactionService.addTransaction({ type, amount: numericAmount, category, note });
       if (res.success) {
         fetchTransactions();
-        return true; 
+        return true;
       }
       return false;
-    } catch (err) { return false; }
+    } catch (err) {
+      return false;
+    }
   };
 
   return (
-    <AppContext.Provider value={{ 
-      transactions, balance, expense, income, limit, savings, 
-      activeGoal, setMonthlyGoal, addTransaction, 
-      updateBudgetLimit: authService.updateLimit, 
-      fetchTransactions, getWeeklyStats, loading 
+    <AppContext.Provider value={{
+      transactions, balance, expense, income, limit, savings,
+      activeGoal, setMonthlyGoal, addTransaction,
+      updateBudgetLimit: authService.updateLimit,
+      fetchTransactions, getWeeklyStats, loading
     }}>
       {children}
     </AppContext.Provider>
